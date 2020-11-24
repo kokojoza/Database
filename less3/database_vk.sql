@@ -1,173 +1,58 @@
--- Создание БД для социальной сети ВКонтакте
--- https://vk.com/geekbrainsru
 
--- Создаём БД
-CREATE DATABASE vk;
+-- Р—Р°РґР°РЅРёРµ 1. Р”РѕР±Р°РІРёР» РїСЂРµРґР»РѕР¶РµРЅРёСЏ РїРѕ СѓСЃРѕРІРµСЂС€РµРЅСЃС‚РІРѕРІР°РЅРёСЋ
 
--- Делаем её текущей
-USE vk;
+-- Р”РѕР±Р°РІРёР» РІ С‚Р°Р±Р»РёС†Сѓ РїСЂРѕС„РёР»РµР№ "is_online"
 
--- Создаём таблицу пользователей
-CREATE TABLE users (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки", 
-  first_name_id INT UNSIGNED NOT NULL COMMENT "Ссылка на имя пользователя",
-  last_name_id INT UNSIGNED NOT NULL COMMENT "Ссылка на фамилия пользователя",
-  email VARCHAR(100) NOT NULL UNIQUE COMMENT "Почта",
-  phone VARCHAR(100) NOT NULL UNIQUE COMMENT "Телефон",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Пользователи";  
-
--- Таблица профилей
-CREATE TABLE profiles (
-  user_id INT UNSIGNED NOT NULL PRIMARY KEY COMMENT "Ссылка на пользователя", 
-  gender_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пол",
-  birthday DATE COMMENT "Дата рождения",
-  photo_id INT UNSIGNED COMMENT "Ссылка на основную фотографию пользователя",
-  status VARCHAR(30) COMMENT "Текущий статус",
-  city_id INT UNSIGNED COMMENT "Ссылка на город проживания",
-  country_id INT UNSIGNED COMMENT "Ссылка на страну проживания",
-  is_online BOOLEAN COMMENT "Онлайн", 
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Профили"; 
-
--- Таблица сообщений
-CREATE TABLE messages (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки", 
-  from_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на отправителя сообщения",
-  to_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на получателя сообщения",
-  body TEXT NOT NULL COMMENT "Текст сообщения",
-  is_important BOOLEAN COMMENT "Признак важности",
-  is_delivered BOOLEAN COMMENT "Признак доставки",
-  created_at DATETIME DEFAULT NOW() COMMENT "Время создания строки",
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Сообщения";
-
--- Таблица дружбы
-CREATE TABLE friendship (
-  user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на инициатора дружеских отношений",
-  friend_id INT UNSIGNED NOT NULL COMMENT "Ссылка на получателя приглашения дружить",
-  status_id INT UNSIGNED NOT NULL COMMENT "Ссылка на статус (текущее состояние) отношений",
-  requested_at DATETIME DEFAULT NOW() COMMENT "Время отправления приглашения дружить",
-  confirmed_at DATETIME COMMENT "Время подтверждения приглашения",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки",  
-  PRIMARY KEY (user_id, friend_id) COMMENT "Составной первичный ключ"
-) COMMENT "Таблица дружбы";
-
--- Таблица статусов дружеских отношений
-CREATE TABLE friendship_statuses (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  status VARCHAR(150) NOT NULL UNIQUE COMMENT "Название статуса",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"  
-) COMMENT "Статусы дружбы";
-
--- Таблица групп
-CREATE TABLE communities (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор сроки",
-  name VARCHAR(150) NOT NULL UNIQUE COMMENT "Название группы",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"  
-) COMMENT "Группы";
-
--- Таблица связи пользователей и групп
-CREATE TABLE communities_users (
-  community_id INT UNSIGNED NOT NULL COMMENT "Ссылка на группу",
-  user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пользователя",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки", 
-  PRIMARY KEY (community_id, user_id) COMMENT "Составной первичный ключ"
-) COMMENT "Участники групп, связь между пользователями и группами";
-
--- Таблица медиафайлов
-CREATE TABLE media (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пользователя, который загрузил файл",
-  filename VARCHAR(255) NOT NULL COMMENT "Путь к файлу",
-  size INT NOT NULL COMMENT "Размер файла",
-  metadata JSON COMMENT "Метаданные файла",
-  media_type_id INT UNSIGNED NOT NULL COMMENT "Ссылка на тип контента",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Медиафайлы";
-
--- Таблица типов медиафайлов
-CREATE TABLE media_types (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  name VARCHAR(255) NOT NULL UNIQUE COMMENT "Название типа",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Типы медиафайлов";
-
--- Задание 1. Добавил предложения по усовершенствованию
-
--- Добавил в таблицу профилей "is_online"
-
--- Таблица вариантов пола
+-- РўР°Р±Р»РёС†Р° РІР°СЂРёР°РЅС‚РѕРІ РїРѕР»Р°
 CREATE TABLE gender (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  gender VARCHAR(20) NOT NULL COMMENT "Пол",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Пол";
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂРѕРєРё",
+  gender VARCHAR(20) NOT NULL COMMENT "РџРѕР»",
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё"
+) COMMENT "РџРѕР»";
 
--- Таблица городов
+-- РўР°Р±Р»РёС†Р° РіРѕСЂРѕРґРѕРІ
 CREATE TABLE city (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  city VARCHAR(130) NOT NULL COMMENT "Город",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Город";
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂРѕРєРё",
+  city VARCHAR(130) NOT NULL COMMENT "Р“РѕСЂРѕРґ",
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё"
+) COMMENT "Р“РѕСЂРѕРґ";
 
--- Таблица стран
+-- РўР°Р±Р»РёС†Р° СЃС‚СЂР°РЅ
 CREATE TABLE country (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  country VARCHAR(130) NOT NULL COMMENT "Страна",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Страна";
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂРѕРєРё",
+  country VARCHAR(130) NOT NULL COMMENT "РЎС‚СЂР°РЅР°",
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё"
+) COMMENT "РЎС‚СЂР°РЅР°";
 
--- Таблица Имён
+-- РўР°Р±Р»РёС†Р° РРјС‘РЅ
 CREATE TABLE first_name (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  first_name VARCHAR(100) NOT NULL COMMENT "Имя"
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Имя";
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂРѕРєРё",
+  first_name VARCHAR(100) NOT NULL COMMENT "РРјСЏ"
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё"
+) COMMENT "РРјСЏ";
 
--- Таблица Фамилий
+-- РўР°Р±Р»РёС†Р° Р¤Р°РјРёР»РёР№
 CREATE TABLE last_name (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
-  last_name VARCHAR(100) NOT NULL COMMENT "Ссылка на фамилия пользователя",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
-) COMMENT "Фамилия";
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂРѕРєРё",
+  last_name VARCHAR(100) NOT NULL COMMENT "РЎСЃС‹Р»РєР° РЅР° С„Р°РјРёР»РёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ",
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё"
+) COMMENT "Р¤Р°РјРёР»РёСЏ";
 
--- Задание 2. Добавить необходимую таблицу/таблицы для того, чтобы можно было использовать лайки для медиафайлов, постов и пользователей.
+-- Р—Р°РґР°РЅРёРµ 2. Р”РѕР±Р°РІРёС‚СЊ РЅРµРѕР±С…РѕРґРёРјСѓСЋ С‚Р°Р±Р»РёС†Сѓ/С‚Р°Р±Р»РёС†С‹ РґР»СЏ С‚РѕРіРѕ,
+-- С‡С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Р°Р№РєРё РґР»СЏ РјРµРґРёР°С„Р°Р№Р»РѕРІ, РїРѕСЃС‚РѕРІ Рё РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№.
 
--- Таблица лайков
-CREATE TABLE friendship (
-  from_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пользователя который поставил лайк",
-  to_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на получателя лайка",
-  ссылка на ти контента
-  ссылка на контент
-  ид
-  
-  requested_at DATETIME DEFAULT NOW() COMMENT "Время лайка",
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",  
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки",  
-  PRIMARY KEY (user_id, friend_id) COMMENT "Составной первичный ключ"
-) COMMENT "Таблица дружбы";
+-- РўР°Р±Р»РёС†Р° Р»Р°Р№РєРѕРІ
+CREATE TABLE likes (
+  user_id INT UNSIGNED NOT NULL COMMENT "РЎСЃС‹Р»РєР° РЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РєРѕС‚РѕСЂС‹Р№ РїРѕСЃС‚Р°РІРёР» Р»Р°Р№Рє",
+  content_id INT UNSIGNED NOT NULL COMMENT "РЎСЃС‹Р»РєР° РЅР° РєРѕРЅС‚РµРЅС‚",
+  requested_at DATETIME DEFAULT NOW() COMMENT "Р’СЂРµРјСЏ Р»Р°Р№РєР°",
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ СЃС‚СЂРѕРєРё",  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂРѕРєРё",  
+  PRIMARY KEY (user_id, content_id) COMMENT "РЎРѕСЃС‚Р°РІРЅРѕР№ РїРµСЂРІРёС‡РЅС‹Р№ РєР»СЋС‡"
+) COMMENT "РўР°Р±Р»РёС†Р° Р»Р°Р№РєРѕРІ";
 
-
-
--- Рекомендуемый стиль написания кода SQL
--- https://www.sqlstyle.guide/ru/
-
--- Заполняем таблицы с учётом отношений 
--- на http://filldb.info
-
--- Документация
--- https://dev.mysql.com/doc/refman/8.0/en/
--- http://www.rldp.ru/mysql/mysql80/index.htm
