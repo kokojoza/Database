@@ -1,0 +1,144 @@
+-- Практическое задание по теме “Операторы, фильтрация, сортировка и ограничение. 
+-- Агрегация данных”
+
+-- Работаем с БД vk и тестовыми данными, которые вы сгенерировали ранее:
+
+-- 1. Создать и заполнить таблицы лайков и постов.
+
+-- 2. Создать все необходимые внешние ключи и диаграмму отношений.
+
+-- 3. Определить кто больше поставил лайков (всего) - мужчины или женщины?
+
+-- 4. Подсчитать количество лайков которые получили 10 самых молодых пользователей. 
+
+-- 5. Найти 10 пользователей, которые проявляют наименьшую активность в
+-- использовании социальной сети
+-- (критерии активности необходимо определить самостоятельно).
+
+-- Таблица лайков
+DROP TABLE IF EXISTS likes;
+CREATE TABLE likes (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  target_id INT UNSIGNED NOT NULL,
+  target_type_id INT UNSIGNED NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица типов лайков
+DROP TABLE IF EXISTS target_types;
+CREATE TABLE target_types (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO target_types (name) VALUES 
+  ('messages'),
+  ('users'),
+  ('media'),
+  ('posts');
+
+-- Заполняем лайки
+INSERT INTO likes 
+  SELECT 
+    id, 
+    FLOOR(1 + (RAND() * 100)), 
+    FLOOR(1 + (RAND() * 100)),
+    FLOOR(1 + (RAND() * 4)),
+    CURRENT_TIMESTAMP 
+  FROM messages;
+
+-- Проверим
+SELECT * FROM likes LIMIT 10;
+
+-- Создадим таблицу постов
+CREATE TABLE posts (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  community_id INT UNSIGNED,
+  head VARCHAR(255),
+  body TEXT NOT NULL,
+  media_id INT UNSIGNED,
+  is_public BOOLEAN DEFAULT TRUE,
+  is_archived BOOLEAN DEFAULT FALSE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+SELECT * FROM posts;
+
+-- Заполняем посты
+INSERT INTO posts
+  (user_id, community_id, head, body, media_id, is_public, is_archived)
+VALUES
+  (20, 20, 'magni', 'Gryphon went on \'And how did you begin?\' The Hatter looked at Alice, as she spoke. \'I must go by the time they were nowhere to be Number One,\' said Alice. \'I don\'t much care where--\' said Alice. \'I.', 6, 1, 0),
+  (5, 3, 'quisquam', 'Alice said nothing: she had read several nice little dog near our house I should say \"With what porpoise?\"\' \'Don\'t you mean \"purpose\"?\' said Alice. \'Exactly so,\' said the Mock Turtle, \'but if you\'ve.', 7, 1, 0),
+  (6, 10, 'voluptatem', 'I shall see it pop down a good deal on where you want to be?\' it asked. \'Oh, I\'m not Ada,\' she said, \'than waste it in large letters. It was opened by another footman in livery came running out of.', 55, 0, 1),
+  (66, 13, 'doloribus' ,'It was the first day,\' said the March Hare. \'Sixteenth,\' added the Gryphon, \'you first form into a chrysalis--you will some day, you know--and then after that savage Queen: so she felt that it was.', 77, 0, 1),
+  (23, 9, 'error', 'Canary called out as loud as she listened, or seemed to be a very difficult question. However, at last it sat for a long way. So she was about a foot high: then she looked down at once, and ran the.', 42, 1, 1); 
+
+-- Добавляем внешние ключи в БД vk
+-- Для таблицы профилей
+
+-- Смотрим структуру таблицы
+DESC communities;
+
+-- Добавляем внешние ключи
+ALTER TABLE profiles
+  ADD CONSTRAINT profiles_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE,
+  ADD CONSTRAINT profiles_photo_id_fk
+    FOREIGN KEY (photo_id) REFERENCES media(id)
+      ON DELETE SET NULL;
+     
+ALTER TABLE profiles     
+  ADD CONSTRAINT profiles_status_id_fk
+    FOREIGN KEY (status_id) REFERENCES user_statuses(id)
+      ON DELETE SET NULL;
+      
+-- Для таблицы сообщений
+
+-- Смотрим структурв таблицы
+DESC messages;
+
+-- Добавляем внешние ключи
+ALTER TABLE messages
+  ADD CONSTRAINT messages_from_user_id_fk
+    FOREIGN KEY (from_user_id) REFERENCES users(id),
+  ADD CONSTRAINT messages_to_user_id_fk 
+    FOREIGN KEY (to_user_id) REFERENCES users(id);
+
+-- Для таблицы участники группы   
+-- Смотрим структурв таблицы
+DESC communities_users;
+
+-- Добавляем внешние ключи
+ALTER TABLE communities_users
+  ADD CONSTRAINT communities_users_from_communities_id_fk 
+    FOREIGN KEY (community_id) REFERENCES communities(id)
+      ON DELETE CASCADE,
+  ADD CONSTRAINT user_id_from_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE;
+     
+     
+-- Для таблицы друзья  
+-- Смотрим структурв таблицы
+DESC friendships;
+
+-- Добавляем внешние ключи
+ALTER TABLE friendships
+  ADD CONSTRAINT community_users_from_communities_id_fk 
+    FOREIGN KEY (community_id) REFERENCES communities(id)
+      ON DELETE CASCADE,
+  ADD CONSTRAINT user_id_from_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE;     
+
+   
+
+    
+   
+   
