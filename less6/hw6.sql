@@ -116,10 +116,10 @@ DESC communities_users;
 
 -- Добавляем внешние ключи
 ALTER TABLE communities_users
-  ADD CONSTRAINT communities_users_from_communities_id_fk 
+  ADD CONSTRAINT communities_users_community_id_fk 
     FOREIGN KEY (community_id) REFERENCES communities(id)
       ON DELETE CASCADE,
-  ADD CONSTRAINT user_id_from_user_id_fk 
+  ADD CONSTRAINT communities_users_user_id_fk 
     FOREIGN KEY (user_id) REFERENCES users(id)
       ON DELETE CASCADE;
      
@@ -130,15 +130,84 @@ DESC friendships;
 
 -- Добавляем внешние ключи
 ALTER TABLE friendships
-  ADD CONSTRAINT community_users_from_communities_id_fk 
-    FOREIGN KEY (community_id) REFERENCES communities(id)
-      ON DELETE CASCADE,
-  ADD CONSTRAINT user_id_from_user_id_fk 
+  ADD CONSTRAINT friendships_user_id_fk 
     FOREIGN KEY (user_id) REFERENCES users(id)
-      ON DELETE CASCADE;     
-
+      ON DELETE CASCADE,
+  ADD CONSTRAINT friendships_friend_id_fk 
+    FOREIGN KEY (friend_id) REFERENCES users(id)
+      ON DELETE CASCADE,     
+  ADD CONSTRAINT friendships_status_id_fk 
+    FOREIGN KEY (status_id) REFERENCES friendship_statuses(id);
+   
    
 
-    
+-- Для таблицы лайки  
+-- Смотрим структурв таблицы
+DESC likes;
+
+-- Добавляем внешние ключи
+ALTER TABLE likes
+  ADD CONSTRAINT likes_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE,
+--   ADD CONSTRAINT likes_target_id_fk 
+--     FOREIGN KEY (target_id) REFERENCES users(id) OR media(id) OR posts(id)    -- Как сделать ссылку сразу на несколько таблиц? 
+--       ON DELETE SET NULL,     
+  ADD CONSTRAINT likes_target_type_id_fk 
+    FOREIGN KEY (target_type_id) REFERENCES target_types(id);
    
+
+-- Для таблицы медиа  
+-- Смотрим структурв таблицы
+DESC media;
+
+-- Добавляем внешние ключи
+ALTER TABLE media
+  ADD CONSTRAINT media_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE,    
+  ADD CONSTRAINT media_media_type_id_fk 
+    FOREIGN KEY (media_type_id) REFERENCES media_types(id);
    
+
+-- Для таблицы постов  
+-- Смотрим структурв таблицы
+DESC posts;
+
+-- Добавляем внешние ключи
+ALTER TABLE posts
+  ADD CONSTRAINT posts_user_id_fk 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE CASCADE,
+  ADD CONSTRAINT posts_community_id_fk 
+    FOREIGN KEY (community_id) REFERENCES communities(id)
+      ON DELETE SET NULL,     
+  ADD CONSTRAINT posts_media_id_fk 
+    FOREIGN KEY (media_id) REFERENCES media(id)
+      ON DELETE SET NULL;
+     
+     
+-- Определить кто больше поставил лайков (всего) - мужчины или женщины?
+SELECT
+  COUNT((SELECT gender FROM profiles WHERE profiles.user_id = likes.user_id AND profiles.gender = 'm')) AS male,
+  COUNT((SELECT gender FROM profiles WHERE profiles.user_id = likes.user_id AND profiles.gender = 'f')) AS female
+FROM likes;
+
+-- Подсчитать количество лайков которые получили 10 самых молодых пользователей.
+
+-- SELECT
+-- 	user_id,
+-- 	TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age,
+-- 	(SELECT user_id FROM likes l WHERE l.user_id = p.user_id AND l.target_type_id = 2) AS qt_likes
+-- FROM
+-- 	profiles p;
+-- -- ORDER BY
+-- -- 	age
+-- -- LIMIT 10;
+-- 
+-- SELECT user_id, TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age, 'qt likes' FROM profiles ORDER BY age LIMIT 10;
+-- SELECT * FROM likes WHERE target_type_id = 2;
+-- SELECT * FROM target_types;
+-- SELECT * FROM likes;
+-- SELECT * FROM likes l WHERE l.user_id = profiles.user_id AND l.target_type_id = 2;
+-- SELECT gender FROM profiles WHERE profiles.user_id = likes.user_id AND profiles.gender = 'm';
