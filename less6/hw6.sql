@@ -195,19 +195,32 @@ FROM likes;
 
 -- Подсчитать количество лайков которые получили 10 самых молодых пользователей.
 
--- SELECT
--- 	user_id,
--- 	TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age,
--- 	(SELECT user_id FROM likes l WHERE l.user_id = p.user_id AND l.target_type_id = 2) AS qt_likes
--- FROM
--- 	profiles p;
--- -- ORDER BY
--- -- 	age
--- -- LIMIT 10;
--- 
--- SELECT user_id, TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age, 'qt likes' FROM profiles ORDER BY age LIMIT 10;
--- SELECT * FROM likes WHERE target_type_id = 2;
--- SELECT * FROM target_types;
--- SELECT * FROM likes;
--- SELECT * FROM likes l WHERE l.user_id = profiles.user_id AND l.target_type_id = 2;
--- SELECT gender FROM profiles WHERE profiles.user_id = likes.user_id AND profiles.gender = 'm';
+-- Смотрим типы для лайков
+SELECT * FROM target_types;
+
+-- Выбираем профили с сортировкой по дате рождения
+SELECT * FROM profiles ORDER BY birthday DESC LIMIT 10;
+
+-- Выбираем количество лайков по условию
+SELECT 
+  (SELECT COUNT(*) FROM likes WHERE /**/target_id/**/ = profiles.user_id AND target_type_id = 2) AS likes_total  
+  FROM profiles 
+  ORDER BY birthday 
+  DESC LIMIT 10;
+
+-- Подбиваем сумму внешним запросом
+SELECT SUM(likes_total) FROM  
+  (SELECT 
+    (SELECT COUNT(*) FROM likes WHERE target_id = profiles.user_id AND target_type_id = 2) AS likes_total  
+    FROM profiles 
+    ORDER BY birthday 
+    DESC LIMIT 10) AS user_likes
+;  
+
+-- Другой вариант
+SELECT COUNT(*) FROM likes 
+  WHERE target_type_id = 2
+    AND target_id IN (SELECT * FROM (
+      SELECT user_id FROM profiles ORDER BY birthday DESC LIMIT 10
+    ) AS sorted_profiles ) 
+;
